@@ -1,0 +1,47 @@
+[
+  {
+    "source": "PRZYKLAD_regulamin.pdf",
+    "text": "Regulamin świadczenia usług drogą elektroniczną. Niniejszy regulamin określa zasady korzystania z serwisu internetowego oraz prawa i obowiązki użytkowników. Usługodawcą jest firma XYZ Sp. z o.o. z siedzibą w Warszawie.",
+    "chunk_index": 0
+  },
+  {
+    "source": "PRZYKLAD_regulamin.pdf",
+    "text": "Użytkownik zobowiązuje się do korzystania z serwisu zgodnie z obowiązującymi przepisami prawa oraz postanowieniami niniejszego regulaminu. Zabrania się zamieszczania treści o charakterze bezprawnym, obraźliwym lub naruszającym prawa osób trzecich.",
+    "chunk_index": 1
+  },
+  {
+    "source": "PRZYKLAD_regulamin.pdf",
+    "text": "Reklamacje można składać drogą elektroniczną na adres kontakt@firma.pl lub pisemnie na adres siedziby firmy. Reklamacja zostanie rozpatrzona w ciągu 14 dni roboczych od jej otrzymania. W przypadku pozytywnego rozpatrzenia, zwrot środków nastąpi w ciągu 7 dni.",
+    "chunk_index": 2
+  },
+  {
+    "source": "PRZYKLAD_oferta.pdf",
+    "text": "Oferta produktów i usług firmy XYZ. Oferujemy szeroki wybór rozwiązań dla firm i klientów indywidualnych. Nasz pakiet Podstawowy zawiera dostęp do wszystkich funkcji systemu przez 30 dni za cenę 49 zł netto miesięcznie.",
+    "chunk_index": 0
+  },
+  {
+    "source": "PRZYKLAD_oferta.pdf",
+    "text": "Pakiet Profesjonalny to rozszerzona wersja naszego oprogramowania z dedykowanym wsparciem technicznym dostępnym 24/7. Cena pakietu wynosi 199 zł netto miesięcznie. Pakiet Enterprise – cena ustalana indywidualnie, w zależności od potrzeb klienta.",
+    "chunk_index": 1
+  },
+  {
+    "source": "PRZYKLAD_oferta.pdf",
+    "text": "Wszystkie pakiety obejmują bezpłatny okres próbny przez 14 dni bez podawania danych karty kredytowej. Po jego zakończeniu użytkownik może wybrać odpowiedni abonament. Możliwa jest rezygnacja w dowolnym momencie bez dodatkowych opłat.",
+    "chunk_index": 2
+  },
+  {
+    "source": "PRZYKLAD_FAQ.pdf",
+    "text": "Najczęściej zadawane pytania (FAQ). Jak zresetować hasło? Aby zresetować hasło, kliknij 'Zapomniałem hasła' na stronie logowania, wprowadź swój adres email i postępuj zgodnie z instrukcją przesłaną na Twoją skrzynkę.",
+    "chunk_index": 0
+  },
+  {
+    "source": "PRZYKLAD_FAQ.pdf",
+    "text": "Jak dodać nowego użytkownika do konta? Wejdź w Ustawienia → Użytkownicy → Dodaj użytkownika. Wpisz adres email nowej osoby i wybierz jej rolę (Administrator, Edytor lub Obserwator). Zaproszenie zostanie wysłane automatycznie.",
+    "chunk_index": 1
+  },
+  {
+    "source": "PRZYKLAD_FAQ.pdf",
+    "text": "Czy mogę eksportować dane? Tak, możesz eksportować dane w formatach CSV, Excel oraz PDF. Opcja eksportu dostępna jest w sekcji Raporty → Eksportuj dane. Eksport dużych zbiorów danych może potrwać kilka minut.",
+    "chunk_index": 2
+  }
+]

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Chatbot Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8e9f0;
+      --muted: #7c7f99;
+      --border: #2e3148;
+      --user-bubble: #6c63ff;
+      --bot-bubble: #1e2235;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 72px 24px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108,99,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(167,139,250,.25);
+      border-radius: 99px;
+      padding: 5px 14px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: 16px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #6c63ff, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* ── STEPS ── */
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 0 24px 64px;
+    }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      flex: 1 1 200px;
+      max-width: 260px;
+    }
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      opacity: .4;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .step h3 { font-size: .9rem; font-weight: 600; margin-bottom: 4px; }
+    .step p  { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CHAT SECTION ── */
+    .chat-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .chat-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .chat-section .sub {
+      color: var(--muted);
+      font-size: .85rem;
+      margin-bottom: 20px;
+    }
+
+    /* ── WIDGET ── */
+    .chat-widget {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 520px;
+    }
+    .chat-header {
+      background: var(--surface2);
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chat-avatar {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #6c63ff, #a78bfa);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .chat-header-info strong { font-size: .9rem; display: block; }
+    .chat-header-info span  { font-size: .75rem; color: #4ade80; }
+    .chat-status-dot {
+      width: 7px; height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: .4; }
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .msg { display: flex; gap: 10px; max-width: 85%; }
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; margin-top: 2px;
+    }
+    .msg.bot .msg-avatar  { background: linear-gradient(135deg,#6c63ff,#a78bfa); }
+    .msg.user .msg-avatar { background: var(--surface2); border: 1px solid var(--border); }
+
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+    .msg.bot  .msg-bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-top-left-radius: 4px; }
+    .msg.user .msg-bubble { background: var(--user-bubble); color: #fff; border-top-right-radius: 4px; }
+
+    .msg-bubble .source-tag {
+      display: inline-block;
+      font-size: .7rem;
+      background: rgba(108,99,255,.2);
+      color: var(--accent2);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin-top: 6px;
+    }
+
+    .typing-indicator {
+      display: flex; gap: 4px; padding: 4px 2px;
+    }
+    .typing-indicator span {
+      width: 6px; height: 6px;
+      background: var(--muted);
+      border-radius: 50%;
+      animation: bounce .9s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: .15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+
+    .chat-input-area {
+      border-top: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #userInput {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .88rem;
+      padding: 10px 14px;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      transition: border-color .2s;
+    }
+    #userInput:focus { border-color: var(--accent); }
+    #userInput::placeholder { color: var(--muted); }
+
+    .send-btn {
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background .2s, transform .1s;
+    }
+    .send-btn:hover  { background: #5b52e0; }
+    .send-btn:active { transform: scale(.95); }
+    .send-btn svg { fill: #fff; }
+
+    /* API Key setup */
+    .setup-bar {
+      background: rgba(108,99,255,.1);
+      border: 1px solid rgba(108,99,255,.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .setup-bar label { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+    .setup-bar input {
+      flex: 1; min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: monospace;
+      font-size: .8rem;
+      padding: 7px 12px;
+      outline: none;
+    }
+    .setup-bar input:focus { border-color: var(--accent); }
+    .save-key-btn {
+      background: var(--accent);
+      border: none; border-radius: 8px;
+      color: #fff; font-size: .82rem; font-weight: 600;
+      padding: 8px 16px; cursor: pointer;
+      white-space: nowrap;
+    }
+    .save-key-btn:hover { background: #5b52e0; }
+
+    /* Suggested questions */
+    .suggestions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 0 20px 14px;
+    }
+    .suggestion-chip {
+      font-size: .76rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 12px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .suggestion-chip:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Docs list */
+    .docs-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .docs-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;
+    }
+    .docs-section .sub { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+    .docs-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .doc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      flex: 1 1 200px;
+    }
+    .doc-icon { font-size: 24px; }
+    .doc-name { font-size: .85rem; font-weight: 500; }
+    .doc-size { font-size: .75rem; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 32px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">🤖 Powered by Claude AI</div>
+  <h1>Zadaj pytanie<br/><span>swoim dokumentom</span></h1>
+  <p>Wgraj PDF-y, a asystent odpowie na Twoje pytania na podstawie ich treści — bez szukania, bez czytania.</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="steps">
+  <div class="step">
+    <div class="step-num">01</div>
+    <h3>Zasilij bazę</h3>
+    <p>Uruchom skrypt <code>process_pdfs.py</code> — przetworzy PDF-y do pliku <code>knowledge.json</code>.</p>
+  </div>
+  <div class="step">
+    <div class="step-num">02</div>
+    <h3>Wpisz klucz API</h3>
+    <p>Podaj swój klucz Anthropic API poniżej. Zostaje tylko w przeglądarce.</p>
+  </div>
+  <div class="step">
+    <div class="step-num">03</div>
+    <h3>Zadawaj pytania</h3>
+    <p>Chatbot przeszuka Twoje dokumenty i odpowie na ich podstawie.</p>
+  </div>
+</div>
+
+<!-- CHAT -->
+<section class="chat-section">
+  <h2>💬 Chatbot</h2>
+  <p class="sub">Pytaj o zawartość załadowanych dokumentów</p>
+
+  <div class="setup-bar">
+    <label>🔑 Klucz Anthropic API:</label>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+    <button class="save-key-btn" onclick="saveApiKey()">Zapisz</button>
+  </div>
+
+  <div class="chat-widget">
+    <div class="chat-header">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-header-info">
+        <strong>Asystent dokumentów</strong>
+        <span><span class="chat-status-dot"></span>Online</span>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">
+          Cześć! Jestem asystentem Twoich dokumentów. Zadaj mi pytanie, a przeszukam załadowane PDF-y i odpowiem na jego podstawie.<br/>
+          <span class="source-tag">📄 Gotowy do pracy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="suggestions" id="suggestions">
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Co zawierają dokumenty?</button>
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Streszcz najważniejsze informacje</button>
+      <button class="suggestion-chip" onclick="sendSuggestion(this)">Jakie są główne tematy?</button>
+    </div>
+
+    <div class="chat-input-area">
+      <textarea id="userInput" rows="1" placeholder="Zadaj pytanie o dokumenty..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS LIST -->
+<section class="docs-section">
+  <h2>📄 Załadowane dokumenty</h2>
+  <p class="sub">Pliki które chatbot zna</p>
+  <div class="docs-grid" id="docsList">
+    <div class="doc-card"><div class="doc-icon">⏳</div><div><div class="doc-name">Ładowanie dokumentów...</div></div></div>
+  </div>
+</section>
+
+<footer>
+  Zbudowany z ❤️ przy pomocy <a href="https://anthropic.com">Claude API</a> ·
+  <a href="https://github.com/TWOJ-LOGIN/pdf-chatbot">Zobacz na GitHub</a>
+</footer>
+
+<script>
+// ── STATE ──
+let knowledgeBase = [];
+let apiKey = sessionStorage.getItem('anthropic_key') || '';
+let conversationHistory = [];
+
+if (apiKey) {
+  document.getElementById('apiKeyInput').value = '••••••••••••';
+}
+
+// ── API KEY ──
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val || val === '••••••••••••') { alert('Wpisz poprawny klucz API'); return; }
+  apiKey = val;
+  sessionStorage.setItem('anthropic_key', val);
+  document.getElementById('apiKeyInput').value = '••••••••••••';
+  addMessage('bot', '✅ Klucz API zapisany! Możesz teraz zadawać pytania.');
+}
+
+// ── LOAD KNOWLEDGE BASE ──
+async function loadKnowledgeBase() {
+  try {
+    const res = await fetch('knowledge.json');
+    if (!res.ok) throw new Error('Brak pliku');
+    knowledgeBase = await res.json();
+    renderDocsList();
+    updateSuggestions();
+  } catch {
+    knowledgeBase = [];
+    document.getElementById('docsList').innerHTML = `
+      <div class="doc-card">
+        <div class="doc-icon">📭</div>
+        <div>
+          <div class="doc-name">Brak dokumentów</div>
+          <div class="doc-size">Uruchom process_pdfs.py, żeby zasilić bazę</div>
+        </div>
+      </div>`;
+  }
+}
+
+function renderDocsList() {
+  const sources = [...new Set(knowledgeBase.map(c => c.source))];
+  const grid = document.getElementById('docsList');
+  if (!sources.length) { grid.innerHTML = '<div class="doc-card"><div class="doc-icon">📭</div><div><div class="doc-name">Brak dokumentów</div></div></div>'; return; }
+  grid.innerHTML = sources.map(s => `
+    <div class="doc-card">
+      <div class="doc-icon">📄</div>
+      <div>
+        <div class="doc-name">${s}</div>
+        <div class="doc-size">${knowledgeBase.filter(c=>c.source===s).length} fragmentów</div>
+      </div>
+    </div>`).join('');
+}
+
+function updateSuggestions() {
+  if (!knowledgeBase.length) return;
+  const sources = [...new Set(knowledgeBase.map(c => c.source))];
+  const el = document.getElementById('suggestions');
+  const extra = sources.slice(0, 2).map(s =>
+    `<button class="suggestion-chip" onclick="sendSuggestion(this)">O czym jest "${s}"?</button>`
+  ).join('');
+  el.innerHTML = `<button class="suggestion-chip" onclick="sendSuggestion(this)">Streszcz wszystkie dokumenty</button>${extra}`;
+}
+
+// ── SEARCH ──
+function searchKnowledge(query) {
+  if (!knowledgeBase.length) return [];
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  return knowledgeBase
+    .map(chunk => ({
+      ...chunk,
+      score: words.reduce((acc, w) => acc + (chunk.text.toLowerCase().includes(w) ? 1 : 0), 0)
+    }))
+    .filter(c => c.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+}
+
+// ── CHAT ──
+function addMessage(role, text, source) {
+  const el = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const avatar = role === 'bot' ? '🤖' : '👤';
+  const sourceTag = source ? `<br/><span class="source-tag">📄 Źródło: ${source}</span>` : '';
+  div.innerHTML = `
+    <div class="msg-avatar">${avatar}</div>
+    <div class="msg-bubble">${text.replace(/\n/g,'<br/>')}${sourceTag}</div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const el = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing';
+  div.innerHTML = `<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+function hideTyping() {
+  document.getElementById('typing')?.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!apiKey) { alert('Najpierw wpisz klucz Anthropic API!'); return; }
+
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('suggestions').style.display = 'none';
+  addMessage('user', text);
+  showTyping();
+
+  // Search knowledge
+  const chunks = searchKnowledge(text);
+  const context = chunks.length
+    ? chunks.map(c => `[${c.source}]\n${c.text}`).join('\n\n---\n\n')
+    : 'Brak dokumentów w bazie wiedzy.';
+
+  const sources = chunks.length ? [...new Set(chunks.map(c => c.source))].join(', ') : null;
+
+  conversationHistory.push({ role: 'user', content: text });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: `Jesteś pomocnym asystentem odpowiadającym WYŁĄCZNIE na podstawie poniższych dokumentów.\n\nDOKUMENTY:\n${context}\n\nZasady:\n- Odpowiadaj po polsku\n- Bazuj tylko na dokumentach\n- Jeśli nie ma odpowiedzi w dokumentach, powiedz to wprost\n- Bądź konkretny i pomocny`,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await res.json();
+    hideTyping();
+
+    if (data.error) {
+      addMessage('bot', `❌ Błąd API: ${data.error.message}`);
+      conversationHistory.pop();
+      return;
+    }
+
+    const reply = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: reply });
+    addMessage('bot', reply, sources);
+  } catch(e) {
+    hideTyping();
+    addMessage('bot', `❌ Błąd połączenia: ${e.message}`);
+    conversationHistory.pop();
+  }
+}
+
+function sendSuggestion(btn) {
+  document.getElementById('userInput').value = btn.textContent;
+  sendMessage();
+}
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+loadKnowledgeBase();
+</script>
+</body>
+</html>
